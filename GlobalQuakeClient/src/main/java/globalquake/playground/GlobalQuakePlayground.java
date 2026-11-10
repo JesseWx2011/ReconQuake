@@ -15,7 +15,7 @@ import globalquake.utils.monitorable.MonitorableCopyOnWriteArrayList;
 import org.tinylog.Logger;
 
 import java.awt.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.concurrent.Executors;
@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class GlobalQuakePlayground extends GlobalQuakeLocal {
 
     public long createdAtMillis;
-    private final long playgroundStartMillis = LocalDate.of(2000, 1, 1)
-            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    private long playgroundStartMillis;
+    private LocalDateTime playgroundDateTime;
 
     private final Collection<Earthquake> playgroundEarthquakes = new MonitorableCopyOnWriteArrayList<>();
 
@@ -50,6 +50,8 @@ public class GlobalQuakePlayground extends GlobalQuakeLocal {
 
     public GlobalQuakePlayground() {
         super(new StationDatabaseManagerPlayground(), new GlobalStationManagerPlayground());
+        this.playgroundDateTime = LocalDateTime.of(2011, 6, 3, 15, 35, 31);
+        this.playgroundStartMillis = playgroundDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         new WaveformGenerator(this);
         createdAtMillis = System.currentTimeMillis();
         createFrame();
@@ -92,5 +94,15 @@ public class GlobalQuakePlayground extends GlobalQuakeLocal {
     @Override
     public boolean isSimulation() {
         return true;
+    }
+
+    public LocalDateTime getPlaygroundDateTime() {
+        return playgroundDateTime;
+    }
+
+    public void setPlaygroundDateTime(LocalDateTime dateTime) {
+        this.playgroundDateTime = dateTime;
+        this.playgroundStartMillis = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        createdAtMillis = System.currentTimeMillis();
     }
 }

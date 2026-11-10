@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
     }
 
     private InsertType insertType = InsertType.NONE;
+    private Font playgroundFont = new Font("Calibri", Font.BOLD, 48);
 
     public GlobalQuakePanelPlayground(JFrame parent) {
         super(parent);
@@ -51,11 +53,17 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
                     displayPlaygroundQuakes = !displayPlaygroundQuakes;
                 }
 
-
                 if (e.getKeyCode() == KeyEvent.VK_E) {
                     insertType = toggle(InsertType.EARTHQUAKE);
                 }
 
+                if (e.getKeyCode() == KeyEvent.VK_D) {
+                    showDateConfigurationDialog();
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_O) {
+                    showFontConfigurationDialog();
+                }
 
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     ((GlobalQuakePlayground) GlobalQuake.instance).getPlaygroundEarthquakes().clear();
@@ -119,8 +127,12 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
         inputs.add(magInput = new DecimalInput("Magnitude", 0, 10, 4.0));
         DecimalInput depthInput;
         inputs.add(depthInput = new DecimalInput("Depth", 0, 700, 10.0));
+        DecimalInput latInput;
+        inputs.add(latInput = new DecimalInput("Latitude", -90, 90, getRenderer().getRenderProperties().centerLat));
+        DecimalInput lonInput;
+        inputs.add(lonInput = new DecimalInput("Longitude", -180, 180, getRenderer().getRenderProperties().centerLon));
         new DecimalInputDialog(parent, "Choose parameters", inputs, () -> _createDebugEarthquake(
-                magInput.getValue(), depthInput.getValue(), getRenderer().getRenderProperties().centerLat, getRenderer().getRenderProperties().centerLon));
+                magInput.getValue(), depthInput.getValue(), latInput.getValue(), lonInput.getValue()));
     }
 
     public void _createDebugEarthquake(double magnitude, double depth, double lat, double lon) {
@@ -172,10 +184,9 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
         String str = ((GlobalQuakePlayground) GlobalQuake.getInstance()).getWatermark();
         g.setColor(new Color(255, 100, 0, (int) ((1.0 + Math.sin(System.currentTimeMillis() / 300.0)) * 40.0 + 80)));
 
-        Font font = new Font("Calibri", Font.BOLD, 48);
-        g.setFont(font);
+        g.setFont(playgroundFont);
 
-        g.drawString(str, getWidth() / 2 - g.getFontMetrics().stringWidth(str) / 2, (getHeight() / 2 - 48 + font.getSize() / 4));
+        g.drawString(str, getWidth() / 2 - g.getFontMetrics().stringWidth(str) / 2, (getHeight() / 2 - 48 + playgroundFont.getSize() / 4));
 
         if (insertType != InsertType.NONE) {
             double x = getWidth() / 2.0;
@@ -188,10 +199,10 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
             str = getDescription(insertType);
             g.setColor(Color.white);
 
-            font = new Font("Calibri", Font.BOLD, 32);
-            g.setFont(font);
+            Font smallFont = new Font(playgroundFont.getFontName(), playgroundFont.getStyle(), Math.max(12, playgroundFont.getSize() - 16));
+            g.setFont(smallFont);
 
-            g.drawString(str, getWidth() / 2 - g.getFontMetrics().stringWidth(str) / 2, (int) (getHeight() * 0.66 + font.getSize() / 4));
+            g.drawString(str, getWidth() / 2 - g.getFontMetrics().stringWidth(str) / 2, (int) (getHeight() * 0.66 + smallFont.getSize() / 4));
 
         }
     }
@@ -199,12 +210,27 @@ public class GlobalQuakePanelPlayground extends GlobalQuakePanel {
     private String getDescription(InsertType insertType) {
         switch (insertType) {
             case EARTHQUAKE -> {
-                return "Press <space> to create Earthquake";
+                return "Press <space> to create Earthquake at specified location";
             }
             case RANDOM_STATIONS -> {
                 return "Press <space> to add random stations";
             }
         }
         return "";
+    }
+
+    private void showDateConfigurationDialog() {
+        GlobalQuakePlayground playgroundInstance = ((GlobalQuakePlayground) GlobalQuake.instance);
+        DateTimeInputDialog dialog = new DateTimeInputDialog(parent, "Configure Playground Date", playgroundInstance.getPlaygroundDateTime());
+        LocalDateTime newDateTime = dialog.getResult();
+        playgroundInstance.setPlaygroundDateTime(newDateTime);
+        JOptionPane.showMessageDialog(parent, "Playground date set to: " + newDateTime, "Date Updated", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showFontConfigurationDialog() {
+        FontConfigurationDialog dialog = new FontConfigurationDialog(parent, "Configure Font", playgroundFont);
+        playgroundFont = dialog.getResult();
+        JOptionPane.showMessageDialog(parent, "Font configured: " + playgroundFont.getFontName() + " - Size " + playgroundFont.getSize(), "Font Updated", JOptionPane.INFORMATION_MESSAGE);
+        repaint();
     }
 }
