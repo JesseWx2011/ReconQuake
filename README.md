@@ -1,4 +1,5 @@
 # ReconQuake
+<img src="https://raw.githubusercontent.com/JesseWx2011/ReconQuake/refs/heads/0.11.1/ReconQuakeBanner.png">
 ReconQuake is a fork of GlobalQuake. ReconQuake includes special features that were not finalized with the last full public release of GlobalQuake.
 
 ReconQuake includes special customization features with the program that the v0.11 GlobalQuake did not originally have.
